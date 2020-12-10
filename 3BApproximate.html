@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Draw smooth curve </title>
+    <link rel="stylesheet" href="http://localhost/arcgis_js_v416_sdk/arcgis_js_api/library/4.16/esri/css/main.css" />
+    <script src="http://localhost/arcgis_js_v416_sdk/arcgis_js_api/library/4.16/init.js"></script>
+
+    <style>
+        html,
+        body,
+        #viewDiv {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/SceneView",
+            "esri/layers/GraphicsLayer",
+            "esri/widgets/Sketch/SketchViewModel",
+            "esri/symbols/WebStyleSymbol",
+            'esri/layers/SceneLayer',
+            "esri/tasks/support/Query",
+            "esri/tasks/QueryTask",
+            "esri/Graphic"
+        ], function (
+            Map,
+            SceneView,
+            GraphicsLayer,
+            SketchViewModel,
+            WebStyleSymbol,
+            SceneLayer,
+            EsriQuery,
+            QueryTask,
+            Graphic
+        ) {
+            let urls = [
+                '需要添加的服务URL',
+                // 场地：
+            ];
+            let PathList = [];
+
+            var myMap = new Map({
+                basemap: '',
+            });
+
+            var view = new SceneView({
+                container: "viewDiv",
+                map: myMap,
+                extent: {
+                    xmin: -9177811,
+                    ymin: 4247000,
+                    xmax: -9176791,
+                    ymax: 4247784,
+                    spatialReference: 102100,
+                }
+            });
+            view.spatialReference = {
+                wkid: 4549
+            }
+            var graphicsLayer = new GraphicsLayer({
+                elevationInfo: {
+                    mode: "relative-to-ground" //相对于地面的高程或综合网格层。
+                }
+            });
+
+
+            //添加底图
+            addmap(urls);
+            //添加GraphicsLayer
+            myMap.add(graphicsLayer);
+            //闭合曲线
+            pointsTest1 = [{
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332482,
+                    y: 340822
+                },
+                {
+                    x: 332481,
+                    y: 340820
+                },
+                {
+                    x: 332242,
+                    y: 340723
+                },
+            ]
+            //非闭合曲线
+            pointsTest2 = [{
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332482,
+                    y: 340822
+                },
+                {
+                    x: 332481,
+                    y: 340820
+                },
+
+            ]
+            //直角
+            pointsTest3 = [{
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332361,
+                    y: 340810
+                },
+                {
+                    x: 332361,
+                    y: 340808
+                },
+
+            ]
+
+            //两个转角
+            pointsTest4 = [{
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332361,
+                    y: 340810
+                },
+                {
+                    x: 332381,
+                    y: 340808
+                },
+
+            ]
+            //两个转角 之间距离较大
+            pointsTest5 = [{
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332361,
+                    y: 340810
+                },
+                {
+                    x: 332391,
+                    y: 340838
+                },
+
+            ]
+
+            //首尾转角
+            pointsTest6 = [{
+                    x: 332235,
+                    y: 340723
+                },
+                {
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332361,
+                    y: 340810
+                },
+                {
+                    x: 332391,
+                    y: 340838
+                },
+
+            ]
+
+
+            //首尾转角2
+            pointsTest7 = [{
+                    x: 332225,
+                    y: 340723
+                },
+                {
+                    x: 332235,
+                    y: 340723
+                },
+                {
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332361,
+                    y: 340810
+                },
+                {
+                    x: 332391,
+                    y: 340838
+                },
+
+            ]
+
+
+            pointsTest8 = [{
+                    x: 332235,
+                    y: 340723
+                },
+                {
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332362,
+                    y: 340823
+                },
+                {
+                    x: 332365,
+                    y: 340828
+                },
+
+            ]
+            pointsTest9 = [{
+                    x: 332220,
+                    y: 340723
+                },
+                {
+                    x: 332242,
+                    y: 340723
+                },
+                {
+                    x: 332361,
+                    y: 340822
+                },
+                {
+                    x: 332362,
+                    y: 340823
+                },
+                {
+                    x: 332365,
+                    y: 340828
+                },
+
+            ]
+
+
+
+            // let resultPoints = getCtrlPoint(points);
+            // console.log(resultPoints)
+            let resultPoints = smoothLineApproximate(pointsTest9);
+            console.log(resultPoints)
+            setDataFormat(resultPoints);
+
+            //闭合曲线
+            let PathListTest1 = [
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332482, 340822, 10],
+                [332481, 340820, 10],
+                [332242, 340723, 10],
+
+            ]
+            //非闭合曲线
+            let PathListTest2 = [
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332482, 340822, 10],
+                [332481, 340820, 10],
+            ]
+            //直角
+            let PathListTest3 = [
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332361, 340810, 10],
+                [332361, 340808, 10],
+            ]
+
+            //两个转角
+            let PathListTest4 = [
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332361, 340810, 10],
+                [332381, 340808, 10],
+            ]
+
+            //两个转角直角 距离较大
+            let PathListTest5 = [
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332361, 340810, 10],
+                [332391, 340838, 10],
+            ]
+
+
+            //首尾转角
+            let PathListTest6 = [
+                [332235, 340723, 10],
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332361, 340810, 10],
+                [332391, 340838, 10],
+            ]
+
+
+            //首尾转角2
+            let PathListTest7 = [
+                [332225, 340723, 10],
+                [332235, 340723, 10],
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332361, 340810, 10],
+                [332391, 340838, 10],
+            ]
+
+            //转角较大
+            let PathListTest8 = [
+                [332235, 340723, 10],
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332362, 340823, 10],
+                [332365, 340828, 10],
+            ]
+
+              //转角较大   距离较大
+              let PathListTest9 = [
+                [332220, 340723, 10],
+                [332242, 340723, 10],
+                [332361, 340822, 10],
+                [332362, 340823, 10],
+                [332365, 340828, 10],
+            ]
+            addRedLine();
+            //加载地图服务
+            function addmap(urls) {
+                let SceneLayerNew;
+                for (let i = 0; i < urls.length; i++) {
+                    SceneLayerNew = new SceneLayer({
+                        url: urls[i]
+                    });
+                    myMap.add(SceneLayerNew)
+                }
+            }
+
+            //添加红线
+            function addRedLine() {
+                console.log(PathList)
+                var polylineShape = {
+                    type: "polyline", // autocasts as new Polyline()
+                    spatialReference: view.spatialReference, //需要设置多边形的空间参考
+                    paths: PathListTest9,
+                    hasZ: true,
+                };
+
+                lineSymbolShape = {
+                    type: "simple-line", // autocasts as SimpleLineSymbol()
+                    color: [255, 0, 0],
+                    width: 4
+                };
+
+                var polylineGraphicShape = new Graphic({
+                    geometry: polylineShape,
+                    symbol: lineSymbolShape
+                });
+                graphicsLayer.add(polylineGraphicShape);
+
+
+                var polylineSmooth = {
+                    type: "polyline", // autocasts as new Polyline()
+                    spatialReference: view.spatialReference, //需要设置多边形的空间参考
+                    paths: PathList,
+                    hasZ: true,
+                };
+
+                lineSymbolSmooth = {
+                    type: "simple-line", // autocasts as SimpleLineSymbol()
+                    color: [0, 255, 0],
+                    width: 4
+                };
+
+                var polylineGraphicSmooth = new Graphic({
+                    geometry: polylineSmooth,
+                    symbol: lineSymbolSmooth
+                });
+                graphicsLayer.add(polylineGraphicSmooth);
+            }
+
+            //三次B样条曲线方程  非闭合曲线  P(t)=∑i=0nPiFi,k(t)   近似拟合
+
+            function smoothLineApproximate(points) {
+                line = []
+                let newPnts = []
+                let pntLen = points.length;
+                newPnts.push({
+                    x: points[0].x,
+                    y: points[0].y
+                });
+                for (var n = 0; n < pntLen; n++) {
+                    if (n <= pntLen - 4) { //因为是三次B样条   阶乘时需要用到式子的三次方，所以必须大于等于四个点
+                        for (var t = 0.0; t <= 1.0; t += 0.1) {
+
+                            var a1 = Math.pow((1 - t), 3) / 6;
+                            var a2 = (3 * Math.pow(t, 3) - 6 * Math.pow(t, 2) + 4) / 6;
+                            var a3 = (-3 * Math.pow(t, 3) + 3 * Math.pow(t, 2) + 3 * t + 1) / 6;
+                            var a4 = Math.pow(t, 3) / 6;
+
+                            var x = a1 * points[n].x + a2 * points[n + 1].x + a3 * points[n + 2].x + a4 *
+                                points[n +
+                                    3].x;
+                            var y = a1 * points[n].y + a2 * points[n + 1].y + a3 * points[n + 2].y + a4 *
+                                points[n +
+                                    3].y;
+                            newPnts.push({
+                                x: x,
+                                y: y
+                            });
+                        }
+                    }
+                }
+                newPnts.push({
+                    x: points[pntLen - 1].x,
+                    y: points[pntLen - 1].y
+                });
+                console.log(newPnts)
+                return newPnts;
+
+            }
+            //三次B样条曲线插值拟合  插值拟合，平滑后的曲线过原始特征点
+            function getCtrlPoint(pointsArr, index, scaleA, scaleB) {
+                if (!scaleA || !scaleB) {
+                    scaleA = 0.15;
+                    scaleB = 0.15;
+                }
+
+                // 处理两种极端情形
+                if (index < 1) {
+                    var pAx = pointsArr[0].x + (pointsArr[1].x - pointsArr[0].x) * scaleA;
+                    var pAy = pointsArr[0].y + (pointsArr[1].y - pointsArr[0].y) * scaleA;
+                } else {
+                    var pAx = pointsArr[index].x + (pointsArr[index + 1].x - pointsArr[index - 1].x) * scaleA;
+                    var pAy = pointsArr[index].y + (pointsArr[index + 1].y - pointsArr[index - 1].y) * scaleA;
+                }
+
+                if (index > pointsArr.length - 3) {
+                    var last = pointsArr.length - 1
+                    var pBx = pointsArr[last].x - (pointsArr[last].x - pointsArr[last - 1].x) * scaleB;
+                    var pBy = pointsArr[last].y - (pointsArr[last].y - pointsArr[last - 1].y) * scaleB;
+                } else {
+                    var pBx = pointsArr[index + 1].x - (pointsArr[index + 2].x - pointsArr[index].x) * scaleB;
+                    var pBy = pointsArr[index + 1].y - (pointsArr[index + 2].y - pointsArr[index].y) * scaleB;
+                }
+
+                return {
+                    pA: {
+                        x: pAx,
+                        y: pAy
+                    },
+                    pB: {
+                        x: pBx,
+                        y: pBy
+                    }
+                }
+
+            }
+
+            function setDataFormat(pointList) {
+                for (let i = 0; i < pointList.length; i++) {
+                    PathList[i] = [pointList[i].x, pointList[i].y, 10]
+                }
+            }
+            // }
+        });
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv">
+       
+    </div>
+</body>
+
+</html>
